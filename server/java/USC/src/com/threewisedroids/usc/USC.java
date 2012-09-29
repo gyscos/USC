@@ -24,6 +24,10 @@ public class USC {
     public static class USCList {
         List<USCNode> nodes = new ArrayList<USCNode>();
 
+        public USCList item(String name) {
+            return item(name, -1);
+        }
+
         public USCList item(String name, int commandId, String... childs) {
             nodes.add(new USCNode(name, commandId, childs));
             return this;
@@ -99,11 +103,14 @@ public class USC {
 
     boolean                  refresh_needed = false;
 
-    USC(USCHandler handler) {
+    public USC(USCHandler handler) {
         this.handler = handler;
     }
 
     public String handleCommand(List<USCParam> params) {
+        if (params == null || params.isEmpty())
+            return "Empty command";
+
         if (handler != null)
             return handler.handleCommand(params);
         return "";
@@ -125,11 +132,11 @@ public class USC {
         return result;
     }
 
-    void start(int port) {
+    public void start(int port) {
         server.listen(port);
     }
 
-    void stop() {
+    public void stop() {
         server.close();
     }
 
