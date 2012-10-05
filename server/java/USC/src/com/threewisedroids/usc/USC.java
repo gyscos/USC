@@ -133,7 +133,7 @@ public class USC {
     }
 
     public void start(int port) {
-        server.listen(port);
+        server.start(port);
     }
 
     public void stop() {

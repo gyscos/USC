@@ -7,64 +7,69 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.helper.network.NetworkHandler;
-import com.helper.network.NetworkServer;
+import com.helper.network.JSONHandler;
+import com.helper.network.JSONServer;
 import com.threewisedroids.usc.USC;
 import com.threewisedroids.usc.USCParam;
 
-public class USCServer extends NetworkServer {
+public class USCServer extends JSONServer {
 
-    class USCNetworkHandler extends NetworkHandler {
+    class USCJSONHandler implements JSONHandler {
 
         @Override
-        public boolean handleMessage(String line) {
+        public JSONObject getAnswer(JSONObject command) {
+
+
             try {
-                List<USCParam> params = new ArrayList<USCParam>();
 
-                // The message is a JSON Array.
-                // System.out.println(line);
-                JSONArray array = new JSONArray(line);
-                for (int i = 0; i < array.length(); i++) {
-                    JSONArray arg = array.getJSONArray(i);
-                    USCParam param = new USCParam(arg.getInt(1),
-                            arg.getString(0));
-
-                    params.add(param);
-                }
-
-                String answer = usc.handleCommand(params);
-                boolean refresh = usc.refresh();
-
-                JSONObject result = new JSONObject();
-
-                result.put("answer", answer);
-                result.put("refresh", refresh);
-                if (refresh)
-                    result.put("root", usc.toJson());
-
-                send(result.toString());
+                String method = command.getString("method");
+                if (method.equals("call"))
+                    return call(command.getJSONArray("params"));
+                else if (method.equals("list"))
+                    return list();
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-            return false;
+
+            return null;
         }
 
-        @Override
-        public void onConnect(String ip) {
-            // Send list of commands
-            try {
-                JSONObject root = usc.toJson();
-                String line = root.toString();
-                send(line);
-            } catch (JSONException e) {
-                e.printStackTrace();
+        public JSONObject list() throws JSONException {
+            JSONObject result = new JSONObject();
+            result.put("result", usc.toJson());
+            return result;
+        }
+
+        public JSONObject call(JSONArray array) throws JSONException {
+
+            List<USCParam> params = new ArrayList<USCParam>();
+
+            // The message is a JSON Array.
+            // System.out.println(line);
+            for (int i = 0; i < array.length(); i++) {
+                JSONArray arg = array.getJSONArray(i);
+                USCParam param = new USCParam(arg.getInt(1),
+                        arg.getString(0));
+
+                params.add(param);
             }
-        }
 
-        @Override
-        public void onDisconnect() {
-        }
+            String answer = usc.handleCommand(params);
+            boolean refresh = usc.refresh();
 
+            JSONObject result = new JSONObject();
+
+            result.put("answer", answer);
+            result.put("refresh", refresh);
+            if (refresh)
+                result.put("root", usc.toJson());
+
+            JSONObject obj = new JSONObject();
+
+            obj.put("result", result);
+
+            return obj;
+        }
     }
 
     USC usc;
@@ -74,7 +79,7 @@ public class USCServer extends NetworkServer {
     }
 
     @Override
-    public NetworkHandler getHandler() {
-        return new USCNetworkHandler();
+    public JSONHandler getHandler() {
+        return new USCJSONHandler();
     }
 }

@@ -1,7 +1,11 @@
+import sys
+
+sys.path.append("../../python_helper")
+
 import json
 import readline
 import completer
-import network.client
+import network.socket_wrapper
 
 def ask():
     cmd = input('> ')
@@ -38,32 +42,33 @@ class UscController:
         args = command.split()
         return self.parse(args, ["entry"])
 
+    def make_rpc(self, method, params = None):
+        if params is None:
+            params = []
+        msg = dict()
+        msg["jsonrpc"] = "2.0"
+        msg["method"] = method
+        msg["params"] = params
+
+        return msg
+
     def handle_command(self, command):
         # Get param list corresponding to command
         params = self.get_param_list(command)
-        self.client.send(json.dumps(params))
+        msg = self.make_rpc('call', params)
+        answer = json.loads(network.socket_wrapper.get_answer(self.addr, json.dumps(msg)))
+        result = answer['result']
+        print(result['answer'])
+        if (result['refresh']):
+            self.load_commands(result['root'])
 
-    def handle_message(self, msg):
-        content = json.loads(msg)
-        if not self.init:
-            self.init = True
-            self.load_commands(content)
-        else:
-            print(content['answer'])
-            if content['refresh']:
-                self.load_commands(content['root'])
-
-
-    def on_connect(self):
-        pass
-
-    def on_disconnect(self):
-        pass
 
     def connect(self, host, port):
         self.init = False
-        self.client = network.client.Client(self)
-        self.client.connect(host, port)
+        self.addr = (host, port)
+        msg = self.make_rpc('list')
+        answer = json.loads(network.socket_wrapper.get_answer(self.addr, json.dumps(msg)))
+        self.load_commands(answer['result'])
         self.run()
 
     def run(self):
@@ -78,4 +83,3 @@ class UscController:
             except EOFError:
                 print()
                 break
-        self.client.close()

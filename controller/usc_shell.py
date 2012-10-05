@@ -57,10 +57,22 @@ class UscShell:
             print("Connecting...")
             c = controller.UscController()
             (host, port) = usc_config.resolve_addr(args[1:])
+
+            readline.write_history_file('.history')
+            readline.clear_history()
+            # Long call
             c.connect(host, port)
             print("Disconnected.")
+
+            readline.clear_history()
+            readline.read_history_file('.history')
             # Done !
             self.refresh()
+        elif args[0] == 'quit':
+            return True
+
+        return False
+
 
     def start(self):
         # Starts to read shell
@@ -68,7 +80,8 @@ class UscShell:
         while True:
             try:
                 cmd = ask()
-                self.handle(cmd)
+                if self.handle(cmd):
+                    break
             except KeyboardInterrupt:
                 print()
                 pass
