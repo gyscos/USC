@@ -8,34 +8,27 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.helper.network.json.JSONHandler;
+import com.helper.network.json.rpc.JSONRpcHandler;
 import com.helper.network.json.JSONServer;
 import com.threewisedroids.usc.USC;
 import com.threewisedroids.usc.USCParam;
 
 public class USCServer extends JSONServer {
 
-    class USCJSONHandler implements JSONHandler {
+    class USCJSONHandler extends JSONRpcHandler {
 
         @Override
-        public JSONObject getAnswer(JSONObject command) {
+        public Object getResult(String method, Object params) {
             try {
-
-                String method = command.getString("method");
                 if (method.equals("call"))
-                    return call(command.getJSONArray("params"));
+                    return call((JSONArray) params);
                 else if (method.equals("list"))
-                    return list();
+                    return usc.toJson();
             } catch (JSONException e) {
                 e.printStackTrace();
             }
 
             return null;
-        }
-
-        public JSONObject list() throws JSONException {
-            JSONObject result = new JSONObject();
-            result.put("result", usc.toJson());
-            return result;
         }
 
         public JSONObject call(JSONArray array) throws JSONException {
@@ -62,11 +55,7 @@ public class USCServer extends JSONServer {
             if (refresh)
                 result.put("root", usc.toJson());
 
-            JSONObject obj = new JSONObject();
-
-            obj.put("result", result);
-
-            return obj;
+            return result;
         }
     }
 
