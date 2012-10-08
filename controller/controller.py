@@ -5,7 +5,7 @@ sys.path.append("../../python_helper")
 import json
 import readline
 import completer
-import network.socket_wrapper
+import network.json_rpc as json_rpc
 
 def ask():
     cmd = input('> ')
@@ -42,22 +42,10 @@ class UscController:
         args = command.split()
         return self.parse(args, ["entry"])
 
-    def make_rpc(self, method, params = None):
-        if params is None:
-            params = []
-        msg = dict()
-        msg["jsonrpc"] = "2.0"
-        msg["method"] = method
-        msg["params"] = params
-
-        return msg
-
     def handle_command(self, command):
         # Get param list corresponding to command
         params = self.get_param_list(command)
-        msg = self.make_rpc('call', params)
-        answer = json.loads(network.socket_wrapper.get_answer(self.addr, json.dumps(msg)))
-        result = answer['result']
+        result,_ = json_rpc.get_answer(self.addr, 'call', params)
         print(result['answer'])
         if (result['refresh']):
             self.load_commands(result['root'])
@@ -66,9 +54,8 @@ class UscController:
     def connect(self, host, port):
         self.init = False
         self.addr = (host, port)
-        msg = self.make_rpc('list')
-        answer = json.loads(network.socket_wrapper.get_answer(self.addr, json.dumps(msg)))
-        self.load_commands(answer['result'])
+        result,_ = json_rpc.get_answer(self.addr, 'list')
+        self.load_commands(result)
         self.run()
 
     def run(self):
