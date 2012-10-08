@@ -7,8 +7,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.helper.network.JSONHandler;
-import com.helper.network.JSONServer;
+import com.helper.network.json.JSONHandler;
+import com.helper.network.json.JSONServer;
 import com.threewisedroids.usc.USC;
 import com.threewisedroids.usc.USCParam;
 
@@ -18,8 +18,6 @@ public class USCServer extends JSONServer {
 
         @Override
         public JSONObject getAnswer(JSONObject command) {
-
-
             try {
 
                 String method = command.getString("method");
