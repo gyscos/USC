@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+import os
+import readline
 import usc_shell
 import controller
 import sys
@@ -22,7 +24,10 @@ usc alias
 
 if __name__ == "__main__":
 
+    completer_filename = os.path.expanduser("~/.usc_completer.rc")
+
     aliases = usc_config.get_aliases()
+    readline.read_init_file(completer_filename)
 
 
     if len(sys.argv) > 1:

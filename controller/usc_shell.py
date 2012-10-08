@@ -6,8 +6,6 @@ import readline
 import completer
 import controller
 
-completer_filename = os.path.expanduser("~/.usc_completer.rc")
-
 def ask():
     cmd = input('> ')
     return cmd
@@ -15,7 +13,6 @@ def ask():
 class UscShell:
 
     def __init__(self):
-        readline.read_init_file(completer_filename)
 
         aliases = usc_config.get_aliases()
 
