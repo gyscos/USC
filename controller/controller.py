@@ -45,7 +45,7 @@ class UscController:
     def handle_command(self, command):
         # Get param list corresponding to command
         params = self.get_param_list(command)
-        result,_ = json_rpc.get_answer(self.addr, 'call', params)
+        result = json_rpc.get_answer(self.addr, 'call', params)
         print(result['answer'])
         if (result['refresh']):
             self.load_commands(result['root'])
@@ -54,7 +54,7 @@ class UscController:
     def connect(self, host, port):
         self.init = False
         self.addr = (host, port)
-        result,_ = json_rpc.get_answer(self.addr, 'list')
+        result = json_rpc.get_answer(self.addr, 'list')
         self.load_commands(result)
         self.run()
 
